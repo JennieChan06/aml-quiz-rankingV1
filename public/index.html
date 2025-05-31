@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洗錢防制排位賽 - 好好證券</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>洗錢防制排位賽</h1>
+            <p>好好證券專業知識測驗</p>
+        </header>
+
+        <!-- 姓名輸入畫面 -->
+        <div id="nameInputContainer" class="name-input-container">
+            <div class="name-input-card">
+                <h2>歡迎參加洗錢防制排位賽</h2>
+                <p>請輸入您的姓名開始測驗</p>
+                
+                <!-- QR Code 區域 -->
+                <div class="qr-code-section">
+                    <div class="qr-code-container">
+                        <div id="qrcode"></div>
+                        <p class="qr-code-text">📱 掃描 QR Code 用手機參加</p>
+                    </div>
+                </div>
+                
+                <input type="text" id="playerNameInput" placeholder="請輸入您的姓名" maxlength="20">
+                <button id="startQuizBtn" class="btn btn-primary">開始測驗</button>
+                <div class="quiz-info">
+                    <p>📋 共20題</p>
+                    <p>🏆 即時排行榜更新</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 測驗容器 -->
+        <div id="quizContainer" class="quiz-container" style="display: none;">
+            <div class="player-info">
+                <span class="player-name">參賽者：<span id="playerNameDisplay"></span></span>
+                <button id="viewLeaderboardBtn" class="btn btn-secondary">查看排行榜</button>
+            </div>
+            
+            <div class="score-display" id="scoreDisplay" style="display: none;">
+                <span id="currentScore">目前總分：0 / 100</span>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="questionNumber">1</span> / <span id="totalQuestions">20</span>
+                </div>
+            </div>
+            
+            <div class="question-container">
+                <h3 id="questionText"></h3>
+                <div id="optionsContainer" class="options-container"></div>
+            </div>
+            
+            <div class="navigation">
+                <button id="prevBtn" class="btn btn-secondary" disabled>上一題</button>
+                <button id="nextBtn" class="btn btn-primary" disabled>下一題</button>
+                <button id="submitBtn" class="btn btn-success" style="display: none;">提交測驗</button>
+            </div>
+        </div>
+
+        <!-- 排行榜容器 -->
+        <div id="leaderboardContainer" class="leaderboard-container" style="display: none;">
+            <div class="leaderboard-header">
+                <h2>🏆 即時排行榜</h2>
+                <button id="backToQuizBtn" class="btn btn-secondary">返回測驗</button>
+            </div>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-label">總參與人數</span>
+                    <span class="stat-value" id="totalParticipants">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">平均分數</span>
+                    <span class="stat-value" id="averageScore">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">最高分數</span>
+                    <span class="stat-value" id="highestScore">-</span>
+                </div>
+            </div>
+            <div class="leaderboard-list" id="leaderboardList">
+                <div class="loading">載入排行榜中...</div>
+            </div>
+        </div>
+
+        <!-- 結果容器 -->
+        <div id="resultContainer" class="result-container" style="display: none;">
+            <div class="result-header">
+                <h2>測驗完成！</h2>
+                <div class="player-result">
+                    <span class="result-player-name">參賽者：<span id="resultPlayerName"></span></span>
+                </div>
+            </div>
+            
+            <div class="score-summary">
+                <div class="final-score">
+                    <span class="score-label">最終得分</span>
+                    <span class="score-value" id="finalScore">0</span>
+                    <span class="score-total">/ 100</span>
+                </div>
+                <div class="rank-display" id="rankDisplay" style="display: none;">
+                    <span class="rank-label">目前排名</span>
+                    <span class="rank-value" id="currentRank">#-</span>
+                </div>
+            </div>
+            
+            <div class="result-details">
+                <p>正確答題：<span id="correctCount">0</span> / <span id="totalCount">20</span></p>
+                <p>答題時間：<span id="timeTaken">0</span> 秒</p>
+            </div>
+            
+            <div class="feedback-message" id="feedbackMessage"></div>
+            
+            <div class="result-actions">
+                <button id="reviewBtn" class="btn btn-secondary">檢視答案</button>
+                <button id="viewFinalLeaderboardBtn" class="btn btn-primary">查看排行榜</button>
+                <button id="restartBtn" class="btn btn-success">重新測驗</button>
+            </div>
+        </div>
+
+        <!-- 檢視答案容器 -->
+        <div id="reviewContainer" class="review-container" style="display: none;">
+            <div class="review-header">
+                <h2>答案檢視</h2>
+                <div class="review-player-info">
+                    <span class="review-player-name">參賽者：<span id="reviewPlayerName"></span></span>
+                </div>
+            </div>
+            
+            <div id="reviewContent" class="review-content"></div>
+            
+            <div class="review-actions">
+                <button id="backToResultBtn" class="btn btn-secondary">返回結果</button>
+                <button id="reviewRestartBtn" class="btn btn-success">重新測驗</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.IO 客戶端 - 可選載入 -->
+    <script>
+        // 檢查是否有後端服務，如果沒有則跳過Socket.IO
+        const socketScript = document.createElement('script');
+        socketScript.src = '/socket.io/socket.io.js';
+        socketScript.onerror = () => console.log('Socket.IO 載入失敗，使用離線模式');
+        socketScript.onload = () => console.log('Socket.IO 載入成功');
+        document.head.appendChild(socketScript);
+    </script>
+    
+    <!-- QR Code 生成庫 - 可選載入 -->
+    <script>
+        const qrScript = document.createElement('script');
+        qrScript.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+        qrScript.onerror = () => console.log('QRCode 庫載入失敗');
+        qrScript.onload = () => console.log('QRCode 庫載入成功');
+        document.head.appendChild(qrScript);
+    </script>
+    
+    <script src="script.js"></script>
+</body>
+</html> 
