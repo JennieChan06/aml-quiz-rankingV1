@@ -372,11 +372,16 @@ function showQuestion() {
     
     // 生成選項
     optionsContainer.innerHTML = question.options.map((option, index) => `
-        <div class="option" onclick="selectOption(${index})" data-option="${index}">
+        <div class="option" data-option="${index}">
             <span class="option-letter">${optionLetters[index]}</span>
             <span class="option-text">${option}</span>
         </div>
     `).join('');
+    
+    // 為每個選項添加點擊事件監聽器
+    document.querySelectorAll('.option').forEach((optionElement, index) => {
+        optionElement.addEventListener('click', () => selectOption(index));
+    });
     
     // 添加解析區域（如果不存在）
     let explanationDiv = document.getElementById('questionExplanation');
