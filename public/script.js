@@ -873,52 +873,58 @@ function hideAllContainers() {
     });
 }
 
-// 生成 QR Code - 安全版本
-function generateQRCode() {
+// 生成 QR Code - 改進版本
+function generateQRCode(customUrl = null) {
     const qrCodeElement = document.getElementById('qrcode');
     
     if (!qrCodeElement) {
-        console.log('QR Code 元素未找到，跳過QR Code生成');
+        console.log('QR Code 元素未找到');
         return;
     }
     
-    // 檢查 QRCode 庫是否已載入
-    if (typeof QRCode === 'undefined') {
-        console.log('QRCode 庫未載入，顯示替代內容');
-        qrCodeElement.innerHTML = '<p style="color: #999; font-size: 0.8rem; text-align: center;">QR Code 載入中...</p>';
-        
-        // 延遲重試，但不要無限重試
-        let retryCount = 0;
-        const maxRetries = 3;
-        
-        const retryInterval = setInterval(() => {
-            retryCount++;
-            if (typeof QRCode !== 'undefined') {
-                clearInterval(retryInterval);
-                generateQRCodeActual();
-            } else if (retryCount >= maxRetries) {
-                clearInterval(retryInterval);
-                qrCodeElement.innerHTML = '<p style="color: #999; font-size: 0.8rem; text-align: center;">QR Code 載入失敗</p>';
-            }
-        }, 1000);
-        
-        return;
-    }
+    // 顯示載入狀態
+    qrCodeElement.innerHTML = '<div style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 8px; color: #666; font-size: 12px;">QR Code 載入中...</div>';
     
-    generateQRCodeActual();
+    // 使用自定義 URL 或當前頁面 URL
+    const targetUrl = customUrl || window.location.href;
+    console.log('生成 QR Code，目標 URL:', targetUrl);
+    
+    // 檢查 QRCode 庫是否載入，最多等待 5 秒
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const checkAndGenerate = () => {
+        attempts++;
+        
+        if (typeof QRCode !== 'undefined') {
+            console.log('QRCode 庫已載入，開始生成 QR Code');
+            generateQRCodeActual(targetUrl);
+        } else if (attempts < maxAttempts) {
+            console.log(`QRCode 庫尚未載入，重試 ${attempts}/${maxAttempts}`);
+            setTimeout(checkAndGenerate, 500);
+        } else {
+            console.error('QRCode 庫載入超時，使用備用方案');
+            generateQRCodeFallback(targetUrl);
+        }
+    };
+    
+    checkAndGenerate();
 }
 
 // 實際生成QR Code的函數
-function generateQRCodeActual() {
-    const currentUrl = window.location.href;
+function generateQRCodeActual(url) {
     const qrCodeElement = document.getElementById('qrcode');
     
     try {
         // 清空現有內容
         qrCodeElement.innerHTML = '';
         
+        // 創建 canvas 元素
+        const canvas = document.createElement('canvas');
+        qrCodeElement.appendChild(canvas);
+        
         // 生成 QR Code
-        QRCode.toCanvas(qrCodeElement, currentUrl, {
+        QRCode.toCanvas(canvas, url, {
             width: 150,
             height: 150,
             margin: 2,
@@ -929,13 +935,41 @@ function generateQRCodeActual() {
         }, function (error) {
             if (error) {
                 console.error('QR Code 生成失敗:', error);
-                qrCodeElement.innerHTML = '<p style="color: #999; font-size: 0.8rem; text-align: center;">QR Code 載入失敗</p>';
+                generateQRCodeFallback(url);
             } else {
                 console.log('QR Code 生成成功');
+                // 為 canvas 添加樣式
+                canvas.style.borderRadius = '8px';
+                canvas.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
             }
         });
     } catch (error) {
         console.error('QR Code 生成錯誤:', error);
-        qrCodeElement.innerHTML = '<p style="color: #999; font-size: 0.8rem; text-align: center;">QR Code 載入失敗</p>';
+        generateQRCodeFallback(url);
     }
-} 
+}
+
+// 備用方案：使用在線 QR Code 服務
+function generateQRCodeFallback(url) {
+    const qrCodeElement = document.getElementById('qrcode');
+    const encodedUrl = encodeURIComponent(url);
+    
+    // 使用 Google Charts API 作為備用方案
+    const qrCodeUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodedUrl}`;
+    
+    qrCodeElement.innerHTML = `
+        <img src="${qrCodeUrl}" 
+             alt="QR Code" 
+             style="width: 150px; height: 150px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+             onerror="this.parentElement.innerHTML='<div style=\\"width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border-radius: 8px; color: #999; font-size: 12px; text-align: center;\\">QR Code<br>載入失敗</div>'"
+        />
+    `;
+    
+    console.log('使用備用 QR Code 服務:', qrCodeUrl);
+}
+
+// 更新 QR Code URL 的函數（供外部調用）
+function updateQRCodeUrl(newUrl) {
+    console.log('更新 QR Code URL:', newUrl);
+    generateQRCode(newUrl);
+}

@@ -12,6 +12,7 @@
         <header>
             <h1>洗錢防制排位賽</h1>
             <p>好好證券專業知識測驗</p>
+            <div id="connectionStatus" class="connection-status" style="display: none;"></div>
         </header>
 
         <!-- 姓名輸入畫面 -->
@@ -157,14 +158,8 @@
         document.head.appendChild(socketScript);
     </script>
     
-    <!-- QR Code 生成庫 - 可選載入 -->
-    <script>
-        const qrScript = document.createElement('script');
-        qrScript.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
-        qrScript.onerror = () => console.log('QRCode 庫載入失敗');
-        qrScript.onload = () => console.log('QRCode 庫載入成功');
-        document.head.appendChild(qrScript);
-    </script>
+    <!-- QR Code 生成庫 - 使用更可靠的載入方式 -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     
     <script src="script.js"></script>
 </body>
